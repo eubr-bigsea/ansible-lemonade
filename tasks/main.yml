@@ -1,0 +1,11 @@
+---
+# tasks file for ansible-lemonade
+- include: lemonade_pre_install.yml
+##- include: db-setup.yml
+##- include: fetch-repos.yml
+#- include: config_install_torn.yml
+#- include: config_install_citron.yml
+#- include: config_install_tahiti.yml
+#- include: config_install_juicer.yml
+#- include: config_install_limonero.yml
+#- include: lemonade_pos_install.yml

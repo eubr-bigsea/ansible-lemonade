@@ -1,0 +1,7 @@
+---
+- name: Install lemonade all in one
+  hosts: lemonade
+  become: yes
+  user: vagrant
+  roles:
+    - { role:  "lemonade", tags: ['lemonade'] }

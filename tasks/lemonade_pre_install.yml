@@ -1,0 +1,87 @@
+---
+- name: Create the system groups
+  group:
+    name: "{{ item }}"
+    state: "present"
+    system: "yes"
+  with_items:
+    - "{{ lemonade_system_group }}"
+  tags:
+    - system-groups
+
+- name: Create system users
+  user:
+    name: "{{ item.name }}"
+    group: "{{ item.group }}"
+    comment: "{{ item.comment }}"
+    shell: "{{ lemonade_system_shell }}"
+    system: "yes"
+    createhome: "{{ item.createhome }}"
+    home: "{{ lemonade_system_user_home }}"
+  with_items:
+    - name: "{{ lemonade_system_user }}"
+      group: "{{ lemonade_system_group }}"
+      comment: "{{ lemonade_system_comment }}"
+      createhome: "yes"
+  tags:
+    - system-users
+
+- name: Create dirs
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner|default(lemonade_system_user) }}"
+    group: "{{ item.group|default(lemonade_system_group) }}"
+    mode: "{{ item.mode|default('0755') }}"
+  with_items:
+    - { path: "/opt", mode: "0755", owner: "root", group: "root" }
+    - { path: "/opt/venvs", mode: "0755", owner: "root", group: "root" }
+    - { path: "/opt/cloned-repos", mode: "0755", owner: "root", group: "root" }
+    - { path: "{{ lemonade_system_user_home }}" }
+    - { path: "/var/log/lemonade",  owner: "root"}
+  tags:
+    - lemonade-dirs
+
+- name: Ensure host on hosts file
+  lineinfile:
+    dest: "/etc/hosts"
+    line: "{{ ansible_default_ipv4.address }} {{ ansible_hostname }}"
+  tags:
+    - lemonade-hosts
+
+- include: lemonade_install_apt.yml
+  when:
+    - ansible_pkg_mgr == 'apt'
+  tags:
+    - lemonade-install
+    - lemonade-apt-packages
+
+- name: Clone lemonade git repositories
+  git:
+    repo: "{{ item.repo }}"
+    dest: "/opt/cloned-repos/{{ item.dest }}"
+    version: "{{ item.version }}"
+    force: "yes"
+  with_items:
+    - repo: "{{ lemonade_tahiti_git_repo }}"
+      dest: "lemonade-tahiti"
+      version: "{{ lemonade_tahiti_git_branch }}"
+    - repo: "{{ lemonade_juicer_git_repo }}"
+      dest: "lemonade-juicer"
+      version: "{{ lemonade_juicer_git_branch }}"
+    - repo: "{{ lemonade_limonero_git_repo }}"
+      dest: "lemonade-limonero"
+      version: "{{ lemonade_limonero_git_branch }}"
+    - repo: "{{ lemonade_citron_git_repo }}"
+      dest: "lemonade-citron"
+      version: "{{ lemonade_citron_git_branch }}"
+    - repo: "{{ lemonade_torn_git_repo }}"
+      dest: "lemonade-torn"
+      version: "{{ lemonade_torn_git_branch }}"
+  tags:
+    - lemonade-clone-repos
+    - lemonade-install
+
+- include: pip_packages_setup.yml
+- include: ruby_gems_setup.yml
+- include: npm_modules_setup.yml
