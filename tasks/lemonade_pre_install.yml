@@ -35,10 +35,10 @@
     mode: "{{ item.mode|default('0755') }}"
   with_items:
     - { path: "/opt", mode: "0755", owner: "root", group: "root" }
-    - { path: "/opt/venvs", mode: "0755", owner: "root", group: "root" }
-    - { path: "/opt/cloned-repos", mode: "0755", owner: "root", group: "root" }
-    - { path: "{{ lemonade_system_user_home }}" }
     - { path: "/var/log/lemonade",  owner: "root"}
+    - { path: "{{ lemonade_system_user_home }}" }
+    - { path: "{{ lemonade_system_user_home }}/venvs", mode: "0755", owner: "root", group: "root" }
+    - { path: "{{ lemonade_system_user_home }}/cloned-repos", mode: "0755", owner: "root", group: "root" }
   tags:
     - lemonade-dirs
 
@@ -49,39 +49,15 @@
   tags:
     - lemonade-hosts
 
-- include: lemonade_install_apt.yml
-  when:
-    - ansible_pkg_mgr == 'apt'
+- name: 'apt | update'
+  apt: update_cache=yes cache_valid_time=3600
   tags:
-    - lemonade-install
-    - lemonade-apt-packages
+    - apt-update
 
-- name: Clone lemonade git repositories
-  git:
-    repo: "{{ item.repo }}"
-    dest: "/opt/cloned-repos/{{ item.dest }}"
-    version: "{{ item.version }}"
-    force: "yes"
-  with_items:
-    - repo: "{{ lemonade_tahiti_git_repo }}"
-      dest: "lemonade-tahiti"
-      version: "{{ lemonade_tahiti_git_branch }}"
-    - repo: "{{ lemonade_juicer_git_repo }}"
-      dest: "lemonade-juicer"
-      version: "{{ lemonade_juicer_git_branch }}"
-    - repo: "{{ lemonade_limonero_git_repo }}"
-      dest: "lemonade-limonero"
-      version: "{{ lemonade_limonero_git_branch }}"
-    - repo: "{{ lemonade_citron_git_repo }}"
-      dest: "lemonade-citron"
-      version: "{{ lemonade_citron_git_branch }}"
-    - repo: "{{ lemonade_torn_git_repo }}"
-      dest: "lemonade-torn"
-      version: "{{ lemonade_torn_git_branch }}"
+- name: Install common apt packages
+  apt:
+    pkg: "{{ item }}"
+  with_items: "{{ lemonade_apt_packages }}"
   tags:
-    - lemonade-clone-repos
-    - lemonade-install
+    - lemonade-apt-commong-packages
 
-- include: pip_packages_setup.yml
-- include: ruby_gems_setup.yml
-- include: npm_modules_setup.yml

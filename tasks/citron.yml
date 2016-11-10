@@ -1,0 +1,52 @@
+---
+- include: lemonade_pre_install.yml
+
+- name: Clone citron git repositories
+  git:
+    repo: "{{ item.repo }}"
+    dest: "{{ lemonade_system_user_home }}/cloned-repos/{{ item.dest }}"
+    version: "{{ item.version }}"
+    force: "yes"
+  with_items:
+    - repo: "{{ lemonade_citron_git_repo }}"
+      dest: "lemonade-citron"
+      version: "{{ lemonade_citron_git_branch }}"
+  tags:
+    - lemonade-clone-repos
+    - lemonade-install
+
+- include: npm_modules_setup.yml
+
+- name: Install citron npm modules
+  npm:
+    path: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-citron"
+    state: present
+  register: install_packages
+  until: install_packages|success
+  retries: 5
+  delay: 2
+  tags:
+    - lemonade-citron-npm-modules-install
+
+- name: Install bower packages
+  bower:
+    path: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-citron"
+    state: present
+  register: install_packages
+  until: install_packages|success
+  retries: 5
+  delay: 2
+  tags:
+    - lemonade-citron-install
+    - lemonade-citron-bower-modules-install
+
+- include: nginx.yml
+
+- name: Build ember app
+  command: ember build --output-path /usr/share/nginx/html
+  args:
+    chdir: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-citron"
+  register: citron_build
+  tags:
+    - lemonade-citron-build
+    - lemonade-citron-install

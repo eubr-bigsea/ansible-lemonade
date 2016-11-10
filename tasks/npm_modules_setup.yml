@@ -1,54 +1,29 @@
 ---
-- name: Download nodejs apt source script
-  get_url:
-    url: "https://deb.nodesource.com/setup_4.x"
-    dest: "/root/nodejs-setup_4.x"
-    mode: 0750
-  register: nodejs_apt
+- name: Install node, npm packages
+  apt:
+    pkg: "{{ item }}"
+  with_items:
+    - nodejs
+    - npm
   tags:
-    - lemonade-nodejs
+    - lemonade-citron-install
+    - lemonade-node-npm-install
 
-- name: Run nodejs script
-  command: "/root/nodejs-setup_4.x"
-  when: nodejs_apt.changed
+- name: Create node link
+  file: src=/usr/bin/nodejs dest=/usr/local/bin/node owner=root group=root state=link
   tags:
-    - lemonade-nodejs
+    - lemonade-citron-install
+    - lemonade-node-npm-install
 
 - name: Install global npm modules
   npm:
     name: "{{ item }}"
     global: yes
     state: present
-  register: install_packages
-  until: install_packages|success
-  retries: 5
-  delay: 2
   with_items:
     - "bower"
     - "ember-cli"
   tags:
     - lemonade-citron-install
+    - lemonade-node-npm-install
     - lemonade-npm-modules-install
-
-- name: Install citron npm modules
-  npm:
-    path: "/opt/cloned-repos/lemonade-citron"
-    state: present
-  register: install_packages
-  until: install_packages|success
-  retries: 5
-  delay: 2
-  tags:
-    - lemonade-citron-npm-modules-install
-
-- name: Install bower packages
-  bower:
-    path: "/opt/cloned-repos/lemonade-citron"
-    state: present
-  register: install_packages
-  until: install_packages|success
-  retries: 5
-  delay: 2
-  tags:
-    - lemonade-citron-install
-    - lemonade-citron-bower-modules-install

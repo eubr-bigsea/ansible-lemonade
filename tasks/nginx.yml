@@ -1,0 +1,16 @@
+---
+- name: 'Install nginx'
+  apt: name=nginx state=present
+  tags:
+    - nginx-install
+
+- name: remove default nginx vhost
+  file: path=/etc/nginx/sites-enabled/default state=absent
+  tags:
+    - nginx-install
+
+- name: copy nginx default
+  template: src=default.conf dest=/etc/nginx/sites-enabled/default.conf
+  tags:
+    - nginx-install
+  notify: restart nginx

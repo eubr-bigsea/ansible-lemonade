@@ -4,17 +4,13 @@ lemonade_system_group: lemonade
 lemonade_system_comment: Lemonade user services
 lemonade_system_shell: /bin/bash
 lemonade_system_user_home: /opt/lemonade
-lemonade_projects: ["tahiti", "juicer", "limonero"]
+lemonade_pip_projects: ["tahiti", "juicer", "limonero"]
 
 cache_timeout: 0
 lemonade_apt_packages:
-  - build-essential
   - git
-  - python-pip
-  - ruby
-  - gems
-  - mariadb-server
-  - mariadb-client
+  #- mariadb-server
+  #- mariadb-client
 
 lemonade_tahiti_git_repo: git@github.com:eubr-bigsea/tahiti.git
 lemonade_tahiti_git_branch: master
@@ -25,7 +21,7 @@ lemonade_juicer_git_branch: master
 lemonade_limonero_git_repo: git@github.com:eubr-bigsea/limonero.git
 lemonade_limonero_git_branch: master
 
-lemonade_citron_git_repo: git@github.com:eubr-bigsea/ember-citron.git
+lemonade_citron_git_repo: https://github.com/eubr-bigsea/ember-citron.git
 lemonade_citron_git_branch: master
 
 lemonade_torn_git_repo: git@github.com:eubr-bigsea/torn.git
