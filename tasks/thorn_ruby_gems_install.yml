@@ -1,0 +1,22 @@
+---
+- name: Install gems dependencies
+  apt:
+    pkg: "{{ item }}"
+  with_items:
+    - libmysqlclient-dev
+
+- name: Ruby with Rbenv install
+  include_role:
+    name: "spitfast.rbenv"
+  vars:
+    rbenv_ruby_version: 2.3.1
+    rbenv_user: "{{ lemonade_system_user }}"
+
+- name: Install thorn gems
+  bundler:
+    chdir: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn"
+    state: present
+    user_install: yes
+    executable: "{{ lemonade_system_user_home }}/.rbenv/shims/bundle"
+  become: no
+

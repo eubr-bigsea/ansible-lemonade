@@ -22,6 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     l.vm.box = "cbednarski/ubuntu-1604"
 
     l.vm.network "forwarded_port", guest: 80, host: 8080
+    l.vm.network "forwarded_port", guest: 3000, host: 3000
 
     l.vm.provider "virtualbox" do |vb|
       vb.memory = 2048
@@ -29,7 +30,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
 
     #APT Proxy
-    l.vm.provision "shell", inline: $apt_proxy
+    #l.vm.provision "shell", inline: $apt_proxy
 
     l.vm.provision "ansible" do |ansible|
       ansible.tags = ANSIBLE_TAGS

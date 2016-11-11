@@ -11,4 +11,7 @@ galaxy_info:
   #  - trusty
        - xenial
   galaxy_tags: [bigsea lemonade]
-dependencies: []
+  dependencies:
+    - geerlingguy.mysql
+    - geerlingguy.nginx
+    - spitfast.rbenv

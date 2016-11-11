@@ -1,0 +1,13 @@
+[Unit]
+Description=Unicorn Server
+
+[Service]
+WorkingDirectory={{ unicorn_app_path }}
+Environment=RAILS_ENV=production
+SyslogIdentifier=thorn-unicorn
+PIDFile=/var/run/lemonade/unicorn.pid
+
+ExecStart={{ unicorn_executable }} "unicorn -D -c {{ unicorn_config_path }} -E production"
+
+[Install]
+WantedBy=multi-user.target

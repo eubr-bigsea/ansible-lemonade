@@ -1,6 +1,7 @@
 ---
 # tasks file for ansible-lemonade
 - include: citron.yml
+- include: thorn.yml
 ##- include: db-setup.yml
 ##- include: fetch-repos.yml
 #- include: config_install_torn.yml

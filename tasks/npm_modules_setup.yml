@@ -1,10 +1,26 @@
 ---
+- name: Download nodejs apt source script
+  get_url:
+    url: "http://deb.nodesource.com/setup_4.x"
+    dest: "/root/nodejs-setup_4.x"
+    mode: 0750
+  register: nodejs_apt
+  tags:
+    - lemonade-citron-install
+    - lemonade-node-npm-install
+
+- name: Run nodejs script
+  command: "/root/nodejs-setup_4.x"
+  when: nodejs_apt.changed
+  tags:
+    - lemonade-citron-install
+    - lemonade-node-npm-install
+
 - name: Install node, npm packages
   apt:
     pkg: "{{ item }}"
   with_items:
     - nodejs
-    - npm
   tags:
     - lemonade-citron-install
     - lemonade-node-npm-install

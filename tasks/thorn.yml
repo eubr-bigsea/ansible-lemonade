@@ -1,0 +1,95 @@
+---
+- include: lemonade_pre_install.yml
+
+- name: Clone thorn git repositories
+  git:
+    repo: "{{ lemonade_thorn_git_repo }}"
+    dest: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn"
+    version: "{{ lemonade_thorn_git_branch }}"
+    depth: 1
+    force: yes
+  ignore_errors: yes
+  tags:
+    - lemonade-clone-repos
+    - lemonade-install
+  become: no
+
+- include: thorn_ruby_gems_install.yml
+  tags:
+    - lemonade-thorn-install
+    - lemonade-gems-install
+
+- name: Install MySQL
+  include_role:
+    name: "geerlingguy.mysql"
+  vars:
+    mysql_databases:
+      - name: thorn
+    mysql_users:
+      - name: "{{ lemonade_thorn_db_user }}"
+        host: "%"
+        password: "{{ lemonade_thorn_db_passwd }}"
+        priv: "{{ lemonade_thorn_db_user }}.*:ALL"
+  tags:
+    - lemonade-thorn-mysql-install
+
+- name: Copy rails database config
+  template:
+    src:  database.yml.j2
+    dest: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn/config/database.yml"
+    force: yes
+  tags:
+    - lemonade-thorn-rails-db-config
+
+- name: Setup database
+  command: "{{ lemonade_system_user_home }}/.rbenv/shims/rake db:setup"
+  args:
+    chdir: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn"
+  environment:
+    RAILS_ENV: production
+  run_once: true
+  ignore_errors: yes
+  register: rake_db_setup
+  tags:
+    - lemonade-thorn-rails-db-config
+
+- name: Rake db:setup failed
+  fail: msg="Rake db:setup failed"
+  when: "not 'already exists' in rake_db_setup.stderr"
+
+- name: Run rails migrations and compile assets
+  command: "{{ lemonade_system_user_home }}/.rbenv/shims/rake db:migrate"
+  args:
+    chdir: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn"
+  environment:
+    RAILS_ENV: production
+  tags:
+    - lemonade-thorn-rails-db-config
+
+- include: unicorn.yml
+  tags:
+    - lemonade-thorn-unicorn-install
+
+- name: Setup Nginx
+  include_role:
+    name: geerlingguy.nginx
+  vars:
+    nginx_vhosts_filename: thorn.conf
+    nginx_remove_default_vhost: true
+    nginx_vhosts:
+      - listen: 3000
+        root: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn"
+        extra_parameters: |
+          try_files $uri/index.html $uri @thorn;
+          location @thorn {
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header Host $http_host;
+                proxy_redirect off;
+                proxy_pass http://thorn;
+          }
+    nginx_upstreams:
+      - name: thorn
+        servers:
+          - "unix:/var/run/lemonade/thorn.sock fail_timeout=0"
+  tags:
+    - lemonade-thorn-nginx-install

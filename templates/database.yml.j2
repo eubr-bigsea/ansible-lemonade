@@ -1,0 +1,12 @@
+production:
+  adapter: mysql2
+  encoding: utf8
+  pool: 5
+  database: thorn
+  username: {{ lemonade_thorn_db_user }}
+  password: {{ lemonade_thorn_db_passwd }}
+{% if lemonade_thorn_db_host %}
+  host: {{ lemonade_thorn_db_host }}
+{% else %}
+  socket: /var/run/mysqld/mysqld.sock
+{% endif %}
