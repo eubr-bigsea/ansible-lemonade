@@ -23,6 +23,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     l.vm.network "forwarded_port", guest: 80, host: 8080
     l.vm.network "forwarded_port", guest: 3000, host: 3000
+    l.vm.network "forwarded_port", guest: 5000, host: 5000
 
     l.vm.provider "virtualbox" do |vb|
       vb.memory = 2048

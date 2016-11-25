@@ -1,0 +1,69 @@
+- include: lemonade_pre_install.yml
+
+- name: Clone tahiti git repositories
+  git:
+    dest: "{{ lemonade_system_user_home }}/cloned-repos/tahiti"
+    repo: "{{ lemonade_tahiti_git_repo }}"
+    version: "{{ lemonade_tahiti_git_branch }}"
+    depth: 1
+    force: yes
+  ignore_errors: yes
+  tags:
+    - lemonade-clone-repos
+    - lemonade-install
+  become: no
+
+- include: pip_packages_setup.yml
+  vars:
+    lemonade_project: tahiti
+
+- name: Creating systemd service unit
+  template:
+    src: python.service.j2
+    dest: /etc/systemd/system/tahiti.service
+    owner: root
+    group: root
+    force: yes
+  vars:
+    lemonade_project: tahiti
+    lemonade_project_workdir: "{{ lemonade_system_user_home }}/cloned-repos/tahiti"
+    python_app: "./tahiti/app_api.py -c tahiti.json"
+  tags:
+    - lemonade-tahiti-service
+    - lemonade-tahiti-systemd
+
+- name: Copy systemd unit for running project
+  template:
+    src: tahiti.json.j2
+    dest: "{{ lemonade_system_user_home }}/cloned-repos/tahiti/tahiti.json"
+    force: yes
+  tags:
+    - lemonade-tahiti-service
+    - lemonade-tahiti-service-systemd
+
+- name: Install MySQL
+  include_role:
+    name: "geerlingguy.mysql"
+  vars:
+    mysql_databases:
+      - name: tahiti
+    mysql_users:
+      - name: "{{ lemonade_tahiti_db_user }}"
+        host: "%"
+        password: "{{ lemonade_tahiti_db_passwd }}"
+        priv: "{{ lemonade_tahiti_db_user }}.*:ALL"
+  tags:
+    - lemonade-tahiti-mysql-install
+
+- name: Run tahiti service
+  systemd:
+    name: tahiti
+    state: restarted
+    enabled: yes
+    daemon_reload: yes
+  register: service_started
+  until: service_started|success
+  retries: 3
+  delay: 3
+  tags:
+    - lemonade-tahiti-service

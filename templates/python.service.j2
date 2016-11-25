@@ -1,0 +1,15 @@
+[Unit]
+Description=Python {{ lemonade_project }} Service
+After=network.service
+
+[Service]
+User={{ lemonade_system_user }}
+Group={{ lemonade_system_group }}
+WorkingDirectory={{ lemonade_project_workdir }}
+SyslogIdentifier=python-{{ lemonade_project }}
+PIDFile=/var/run/lemonade/{{ lemonade_project }}.pid
+
+ExecStart={{ lemonade_project_workdir }}/bin/python {{ python_app }}
+
+[Install]
+WantedBy=multi-user.target

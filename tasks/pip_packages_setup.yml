@@ -1,46 +1,41 @@
-
-- name: Create lemonade venv dirs
-  file:
-    path: "/opt/venvs/lemonade-{{ item }}"
-    state: directory
-    owner: "root"
-    group: "{{ lemonade_system_group }}"
-    mode: "0775"
-  with_items: "{{ lemonade_pip_projects }}"
+- name: Install pip and virtualenv
+  apt:
+    pkg: "{{ item }}"
+  with_items:
+    - python-pip
+    - virtualenv
+    - libmysqlclient-dev
   tags:
-    - lemonade-venv-dirs
+    - lemonade-tahiti-install
+    - lemonade-apt-install
 
 - name: Create lemonade virtualenvs
-  command: "virtualenv /opt/venvs/lemonade-{{ item }}"
-  args:
-    creates: "/opt/venvs/lemonade-{{ item }}/bin"
-  with_items: "{{ lemonade_pip_projects }}"
+  command: "virtualenv {{ lemonade_system_user_home }}/cloned-repos/{{ lemonade_project }}"
+  become: no
   tags:
     - lemonade-install
     - lemonade-create-venv
 
 - name: Ensure lemonade group on venv
   file:
-    dest: "/opt/venvs/lemonade-{{ item }}"
-    owner: "root"
-    group: "lemonade"
-    recurse: "yes"
-  with_items: "{{ lemonade_pip_projects }}"
+    dest: "{{ lemonade_system_user_home }}/cloned-repos/{{ lemonade_project }}"
+    owner: "{{ lemonade_system_user }}"
+    group: "{{ lemonade_system_group }}"
+    recurse: yes
   tags:
     - lemonade-install
     - lemonade-create-venv
 
 - name: Install pip packages (venv)
   pip:
-    name: "{{ item }}"
     state: present
-    virtualenv: "/opt/venvs/lemonade-{{item}}"
-    requirements: "/opt/cloned-repos/lemonade-{{ item }}/requirements.txt"
+    virtualenv: "{{ lemonade_system_user_home }}/cloned-repos/{{ lemonade_project }}"
+    requirements: "{{ lemonade_system_user_home }}/cloned-repos/{{ lemonade_project }}/requirements.txt"
   register: install_packages
   until: install_packages|success
   retries: 5
   delay: 2
-  with_items: "{{ lemonade_pip_projects }}"
+  become: no
   tags:
     - lemonade-install
     - lemonade-pip-packages
