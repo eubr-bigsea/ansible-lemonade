@@ -4,42 +4,72 @@
 - name: Clone citron git repositories
   git:
     repo: "{{ lemonade_citron_git_repo }}"
-    dest: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-citron"
+    dest: "{{ lemonade_system_user_home }}/citron"
     version: "{{ lemonade_citron_git_branch }}"
     depth: 1
     force: yes
   ignore_errors: yes
   tags:
-    - lemonade-clone-repos
-    - lemonade-install
-  become: no
+    - lemonade-git-repository
+    - lemonade-citron-git-repository
 
 - include: npm_modules_setup.yml
+  tags:
+    - lemonade-citron-js
+    - lemonade-citron-nodejs
 
 - name: Install citron npm modules
   npm:
-    path: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-citron"
+    path: "{{ lemonade_system_user_home }}/citron"
     state: present
   register: install_packages
   until: install_packages|success
   retries: 5
   delay: 2
-  become: no
   tags:
-    - lemonade-citron-npm-modules-install
+    - lemonade-citron-js
+    - lemonade-citron-js-modules
 
 - name: Install bower packages
   bower:
-    path: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-citron"
+    path: "{{ lemonade_system_user_home }}/citron"
     state: present
   register: install_packages
   until: install_packages|success
   retries: 5
   delay: 2
-  become: no
   tags:
-    - lemonade-citron-install
-    - lemonade-citron-bower-modules-install
+    - lemonade-citron-js
+    - lemonade-citron-js-modules
+
+- name: Create ember dotenv production
+  copy:
+    content:  "THORN=http://localhost:3000"
+    dest: "{{ lemonade_system_user_home }}/citron/.env"
+    force: yes
+  tags:
+    - lemonade-ember
+    - lemonade-citron-ember
+
+- name: Build ember app
+  command: "ember build -prod --output-path=/usr/share/nginx/html"
+  args:
+    chdir: "{{ lemonade_system_user_home }}/citron"
+  register: citron_build
+  tags:
+    - lemonade-ember
+    - lemonade-citron-ember
+
+- name: Chown directory
+  file:
+    path: "{{ lemonade_system_user_home }}/citron"
+    state: directory
+    owner: "{{ lemonade_system_user }}"
+    group: "{{ lemonade_system_group }}"
+    mode: 0755
+    recurse: true
+  tags:
+    - lemonade-dirs
 
 - name: Setup Nginx
   include_role:
@@ -56,22 +86,6 @@
             try_files $uri $uri/ /index.html;
           }
   tags:
-    - lemonade-citron-nginx-install
-
-- name: Create ember dotenv production
-  copy:
-    content:  "THORN=http://localhost:3000"
-    dest: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-citron/.env"
-    force: yes
-  become: no
-  tags:
-    - lemonade-citron-build
-
-- name: Build ember app
-  command: "ember build -prod --output-path=/usr/share/nginx/html"
-  args:
-    chdir: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-citron"
-  register: citron_build
-  tags:
-    - lemonade-citron-build
-    - lemonade-citron-install
+    - lemonade-nginx
+    - lemonade-citron-nginx
+    - lemonade-services

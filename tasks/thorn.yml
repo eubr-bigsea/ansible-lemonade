@@ -4,20 +4,16 @@
 - name: Clone thorn git repositories
   git:
     repo: "{{ lemonade_thorn_git_repo }}"
-    dest: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn"
+    dest: "{{ lemonade_system_user_home }}/thorn"
     version: "{{ lemonade_thorn_git_branch }}"
     depth: 1
     force: yes
   ignore_errors: yes
   tags:
-    - lemonade-clone-repos
-    - lemonade-install
-  become: no
+    - lemonade-git-repository
+    - lemonade-thorn-git-repository
 
-- include: thorn_ruby_gems_install.yml
-  tags:
-    - lemonade-thorn-install
-    - lemonade-gems-install
+- include: ruby_gems_install.yml
 
 - name: Install MySQL
   include_role:
@@ -31,27 +27,41 @@
         password: "{{ lemonade_thorn_db_passwd }}"
         priv: "{{ lemonade_thorn_db_user }}.*:ALL"
   tags:
-    - lemonade-thorn-mysql-install
+    - lemonade-mysql
+    - lemonade-thorn-mysql
 
 - name: Copy rails database config
   template:
     src:  database.yml.j2
-    dest: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn/config/database.yml"
+    dest: "{{ lemonade_system_user_home }}/thorn/config/database.yml"
     force: yes
   tags:
-    - lemonade-thorn-rails-db-config
+    - lemonade-rails
+    - lemonade-thorn-config
+
+- name: Chown directory
+  file:
+    path: "{{ lemonade_system_user_home }}/thorn"
+    state: directory
+    owner: "{{ lemonade_system_user }}"
+    group: "{{ lemonade_system_group }}"
+    mode: 0755
+    recurse: true
+  tags:
+    - lemonade-dirs
 
 - name: Setup database
   command: "{{ lemonade_system_user_home }}/.rbenv/shims/rake db:setup"
   args:
-    chdir: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn"
+    chdir: "{{ lemonade_system_user_home }}/thorn"
   environment:
     RAILS_ENV: production
   run_once: true
   ignore_errors: yes
   register: rake_db_setup
   tags:
-    - lemonade-thorn-rails-db-config
+    - lemonade-rails
+    - lemonade-thorn-config
 
 - name: Rake db:setup failed
   fail: msg="Rake db:setup failed"
@@ -60,15 +70,16 @@
 - name: Run rails migrations and compile assets
   command: "{{ lemonade_system_user_home }}/.rbenv/shims/rake db:migrate"
   args:
-    chdir: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn"
+    chdir: "{{ lemonade_system_user_home }}/thorn"
   environment:
     RAILS_ENV: production
   tags:
-    - lemonade-thorn-rails-db-config
+    - lemonade-rails
+    - lemonade-thorn-config
 
 - include: unicorn.yml
   tags:
-    - lemonade-thorn-unicorn-install
+    - lemonade-thorn-unicorn
 
 - name: Setup Nginx
   include_role:
@@ -78,7 +89,7 @@
     nginx_remove_default_vhost: true
     nginx_vhosts:
       - listen: 3000
-        root: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn"
+        root: "{{ lemonade_system_user_home }}/thorn"
         extra_parameters: |
           try_files $uri/index.html $uri @thorn;
           location @thorn {
@@ -92,4 +103,6 @@
         servers:
           - "unix:/var/run/lemonade/thorn.sock fail_timeout=0"
   tags:
-    - lemonade-thorn-nginx-install
+    - lemonade-nginx
+    - lemonade-thorn-nginx
+

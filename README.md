@@ -1,38 +1,42 @@
-Role Name
+Ansible Role: Lemonade
 =========
 
-A brief description of the role goes here.
+Installs and configures Lemonade's projects
 
 Requirements
 ------------
-
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
-
-Role Variables
---------------
-
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+This role requires root access.
 
 Dependencies
 ------------
+```
+ansible-galaxy install geerlingguy.mysql geerlingguy.nginx geerlingguy.redis spitfast.rbenv
+```
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+Role Variables
+--------------
+Variable are defined in [vars/main.yml](vars/mail.yml), they basicaly sets
+repository location, branch and hosts for services like MySQL and Redis.
+
+Which projects should be install are defined on its respective variables
+```
+citron: false
+thorn: false
+tahiti: false
+stand: false
+limonero: false
+```
 
 Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
-
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+An example is set on [lemonade.yml](lemonade.yml)
 
 License
 -------
-
 BSD
 
 Author Information
 ------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+This role was created in 2016 by Guilherme Maluf Balzana, part of [EUBra-BIGSEA
+Project](http://www.eubra-bigsea.eu/)

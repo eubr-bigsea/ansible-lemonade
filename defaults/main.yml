@@ -1,2 +1,9 @@
 ---
 # defaults file for ansible-lemonade
+
+#Lemonade projects
+citron: false
+thorn: false
+tahiti: false
+stand: false
+limonero: false

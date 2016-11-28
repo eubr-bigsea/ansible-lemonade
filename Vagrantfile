@@ -31,7 +31,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     end
 
     #APT Proxy
-    #l.vm.provision "shell", inline: $apt_proxy
+    l.vm.provision "shell", inline: $apt_proxy
 
     l.vm.provision "ansible" do |ansible|
       ansible.tags = ANSIBLE_TAGS

@@ -1,6 +1,21 @@
 ---
-#- include: citron.yml
-#- include: thorn.yml
-#- include: tahiti.yml
-#- include: stand.yml
+- include: citron.yml
+  when: citron
+  tags:
+    - citron
+- include: thorn.yml
+  when: thorn
+  tags:
+    - thorn
+- include: tahiti.yml
+  when: tahiti
+  tags:
+    - tahiti
+- include: stand.yml
+  when: stand
+  tags:
+    - stand
 - include: limonero.yml
+  when: limonero
+  tags:
+    - limonero

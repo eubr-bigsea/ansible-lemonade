@@ -6,15 +6,15 @@
     mode: 0750
   register: nodejs_apt
   tags:
-    - lemonade-citron-install
-    - lemonade-node-npm-install
+    - nodejs
+    - nodejs-download
 
 - name: Run nodejs script
   command: "/root/nodejs-setup_4.x"
   when: nodejs_apt.changed
   tags:
-    - lemonade-citron-install
-    - lemonade-node-npm-install
+    - nodejs
+    - nodejs-run-script
 
 - name: Install node, npm packages
   apt:
@@ -22,14 +22,14 @@
   with_items:
     - nodejs
   tags:
-    - lemonade-citron-install
-    - lemonade-node-npm-install
+    - nodejs
+    - nodejs-apt-install
 
 - name: Create node link
   file: src=/usr/bin/nodejs dest=/usr/local/bin/node owner=root group=root state=link
   tags:
-    - lemonade-citron-install
-    - lemonade-node-npm-install
+    - nodejs
+    - nodejs-linking
 
 - name: Install global npm modules
   npm:
@@ -40,6 +40,5 @@
     - "bower"
     - "ember-cli"
   tags:
-    - lemonade-citron-install
-    - lemonade-node-npm-install
-    - lemonade-npm-modules-install
+    - nodejs
+    - bower-ember-modules

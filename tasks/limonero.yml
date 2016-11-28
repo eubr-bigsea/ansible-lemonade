@@ -1,46 +1,5 @@
 - include: lemonade_pre_install.yml
 
-- name: Clone limonero git repositories
-  git:
-    dest: "{{ lemonade_system_user_home }}/cloned-repos/limonero"
-    repo: "{{ lemonade_limonero_git_repo }}"
-    version: "{{ lemonade_limonero_git_branch }}"
-    depth: 1
-    force: yes
-  ignore_errors: yes
-  tags:
-    - lemonade-clone-repos
-    - lemonade-install
-  become: no
-
-- include: pip_packages_setup.yml
-  vars:
-    lemonade_project: limonero
-
-- name: Create systemd service unit
-  template:
-    src: python.service.j2
-    dest: /etc/systemd/system/limonero.service
-    owner: root
-    group: root
-    force: yes
-  vars:
-    lemonade_project: limonero
-    lemonade_project_workdir: "{{ lemonade_system_user_home }}/cloned-repos/limonero"
-    python_app: "./limonero/app_api.py -c stand.json"
-  tags:
-    - lemonade-limonero-service
-    - lemonade-limonero-systemd
-
-- name: Create app config
-  template:
-    src: limonero.json.j2
-    dest: "{{ lemonade_system_user_home }}/cloned-repos/limonero/stand.json"
-    force: yes
-  tags:
-    - lemonade-limonero-service
-    - lemonade-limonero-service-systemd
-
 - name: Install MySQL
   include_role:
     name: "geerlingguy.mysql"
@@ -53,7 +12,57 @@
         password: "{{ lemonade_limonero_db_passwd }}"
         priv: "{{ lemonade_limonero_db_user }}.*:ALL"
   tags:
-    - lemonade-limonero-mysql-install
+    - lemonade-mysql
+    - lemonade-limonero-mysql
+
+- name: Clone limonero git repositories
+  git:
+    dest: "{{ lemonade_system_user_home }}/limonero"
+    repo: "{{ lemonade_limonero_git_repo }}"
+    version: "{{ lemonade_limonero_git_branch }}"
+    depth: 1
+    force: yes
+  ignore_errors: yes
+  tags:
+    - lemonade-git-repository
+    - lemonade-limonero-git-repository
+
+- include: pip_packages_setup.yml
+  vars:
+    lemonade_project: limonero
+
+- name: Create app config
+  template:
+    src: limonero.json.j2
+    dest: "{{ lemonade_system_user_home }}/limonero/limonero.json"
+    force: yes
+  tags:
+    - lemonade-limonero-config
+
+- name: Chown directory
+  file:
+    path: "{{ lemonade_system_user_home }}/limonero"
+    state: directory
+    owner: "{{ lemonade_system_user }}"
+    group: "{{ lemonade_system_group }}"
+    mode: 0755
+  tags:
+    - lemonade-dirs
+
+- name: Create systemd service unit
+  template:
+    src: python.service.j2
+    dest: /etc/systemd/system/limonero.service
+    owner: root
+    group: root
+    force: yes
+  vars:
+    lemonade_project: limonero
+    lemonade_project_workdir: "{{ lemonade_system_user_home }}/limonero"
+    python_app: "./limonero/app_api.py -c limonero.json"
+  tags:
+    - lemonade-systemd
+    - lemonade-limonero-systemd
 
 - name: Run limonero service
   systemd:
@@ -66,4 +75,6 @@
   retries: 3
   delay: 3
   tags:
-    - lemonade-limonero-service
+    - lemonade-service
+    - lemonade-systemd
+    - lemonade-limonero-systemd

@@ -5,3 +5,6 @@
   user: vagrant
   roles:
     - { role:  "lemonade", tags: ['lemonade'] }
+  vars:
+    - citron: true
+    - thorn: true

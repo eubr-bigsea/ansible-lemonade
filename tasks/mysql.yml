@@ -1,4 +1,0 @@
----
-- name: MySQL installation
-  roles:
-    - { role: "geerlingguy.mysql", tags: ['mysql'] }

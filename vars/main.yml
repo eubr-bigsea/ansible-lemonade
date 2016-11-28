@@ -1,12 +1,9 @@
 ---
-lemonade_system_user: vagrant
-lemonade_system_group: vagrant
+lemonade_system_user: lemonade
+lemonade_system_group: lemonade
 lemonade_system_comment: Lemonade user services
 lemonade_system_shell: /bin/bash
-lemonade_system_user_home: /home/vagrant
-lemonade_pip_projects: ["tahiti", "juicer", "limonero"]
-
-cache_timeout: 0
+lemonade_system_user_home: /opt/lemonade
 lemonade_apt_packages:
   - git
   - libmysqlclient-dev
@@ -34,7 +31,7 @@ lemonade_limonero_db_passwd: limonerosecret
 lemonade_limonero_db_host: localhost
 
 lemonade_citron_git_repo: https://github.com/eubr-bigsea/ember-citron.git
-lemonade_citron_git_branch: gm_dotenv_environment
+lemonade_citron_git_branch: master
 
 lemonade_thorn_git_repo: https://github.com/eubr-bigsea/thorn.git
 lemonade_thorn_git_branch: master

@@ -1,44 +1,35 @@
 ---
 - name: Create the system groups
   group:
-    name: "{{ item }}"
-    state: "present"
-    system: "yes"
-  with_items:
-    - "{{ lemonade_system_group }}"
+    name: "{{ lemonade_system_group }}"
+    state: present
+    system: yes
   tags:
     - system-groups
 
 - name: Create system users
   user:
-    name: "{{ item.name }}"
-    group: "{{ item.group }}"
-    comment: "{{ item.comment }}"
+    name: "{{ lemonade_system_user }}"
+    group: "{{ lemonade_system_group }}"
+    comment: "{{ lemonade_system_comment }}"
     shell: "{{ lemonade_system_shell }}"
-    system: "yes"
-    createhome: "{{ item.createhome }}"
+    system: yes
+    createhome: yes
     home: "{{ lemonade_system_user_home }}"
-  with_items:
-    - name: "{{ lemonade_system_user }}"
-      group: "{{ lemonade_system_group }}"
-      comment: "{{ lemonade_system_comment }}"
-      createhome: "yes"
   tags:
     - system-users
 
 - name: Create dirs
   file:
-    path: "{{ item.path }}"
+    path: "{{ item }}"
     state: directory
-    owner: "{{ item.owner|default(lemonade_system_user) }}"
-    group: "{{ item.group|default(lemonade_system_group) }}"
-    mode: "{{ item.mode|default('0755') }}"
+    owner: "{{ lemonade_system_user }}"
+    group: "{{ lemonade_system_group }}"
+    mode: 0755
   with_items:
-    - { path: "/var/run/lemonade" }
-    - { path: "/var/log/lemonade" }
-    - { path: "{{ lemonade_system_user_home }}" }
-    - { path: "{{ lemonade_system_user_home }}/venvs" }
-    - { path: "{{ lemonade_system_user_home }}/cloned-repos" }
+    -  /var/run/lemonade
+    -  /var/log/lemonade
+    -  "{{ lemonade_system_user_home }}"
   tags:
     - lemonade-dirs
 
@@ -52,12 +43,13 @@
 - name: 'apt | update'
   apt: update_cache=yes cache_valid_time=3600
   tags:
-    - apt-update
+    - lemonade-apt
+    - lemonade-apt-update
 
 - name: Install common apt packages
   apt:
     pkg: "{{ item }}"
   with_items: "{{ lemonade_apt_packages }}"
   tags:
-    - lemonade-apt-commong-packages
+    - lemonade-apt
 

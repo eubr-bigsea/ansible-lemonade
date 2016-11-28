@@ -6,17 +6,17 @@
     executable: "{{ lemonade_system_user_home }}/.rbenv/shims/gem"
   become: no
   tags:
-    - lemonade-thorn-unicorn-install
+    - lemonade-gems
 
 - name: Copy unicorn rails config
   template:
     src: unicorn.rb.j2
-    dest: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn/config/unicorn/production.rb"
+    dest: "{{ lemonade_system_user_home }}/thorn/config/unicorn/production.rb"
     owner: "{{ lemonade_system_user }}"
     group: "{{ lemonade_system_group }}"
     force: yes
   tags:
-    - lemonade-thorn-unicorn-install
+    - lemonade-unicorn
 
 - name: Creating upstart script for unicorn
   template:
@@ -26,11 +26,11 @@
     group: root
     force: yes
   vars:
-    unicorn_app_path: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn"
-    unicorn_config_path: "{{ lemonade_system_user_home }}/cloned-repos/lemonade-thorn/config/unicorn/production.rb"
+    unicorn_app_path: "{{ lemonade_system_user_home }}/thorn"
+    unicorn_config_path: "{{ lemonade_system_user_home }}/thorn/config/unicorn/production.rb"
     unicorn_executable: "{{ lemonade_system_user_home }}/.rbenv/shims/bundle exec"
   tags:
-    - lemonade-thorn-unicorn-install
+    - lemonade-unicorn
 
 - name: Unicorn service
   service:
@@ -38,4 +38,5 @@
     state: started
     enabled: yes
   tags:
-    - lemonade-thorn-unicorn-install
+    - lemonade-services
+    - lemonade-unicorn

@@ -2,16 +2,15 @@
 
 - name: Clone stand git repositories
   git:
-    dest: "{{ lemonade_system_user_home }}/cloned-repos/stand"
+    dest: "{{ lemonade_system_user_home }}/stand"
     repo: "{{ lemonade_stand_git_repo }}"
     version: "{{ lemonade_stand_git_branch }}"
     depth: 1
     force: yes
   ignore_errors: yes
   tags:
-    - lemonade-clone-repos
-    - lemonade-install
-  become: no
+    - lemonade-git-repository
+    - lemonade-stand-git-repository
 
 - include: pip_packages_setup.yml
   vars:
@@ -26,22 +25,21 @@
     force: yes
   vars:
     lemonade_project: stand
-    lemonade_project_workdir: "{{ lemonade_system_user_home }}/cloned-repos/stand"
+    lemonade_project_workdir: "{{ lemonade_system_user_home }}/stand"
     python_app: "./stand/app_api.py -c stand.json"
   tags:
-    - lemonade-stand-service
+    - lemonade-systemd
     - lemonade-stand-systemd
 
 - name: Create app config
   template:
     src: stand.json.j2
-    dest: "{{ lemonade_system_user_home }}/cloned-repos/stand/stand.json"
+    dest: "{{ lemonade_system_user_home }}/stand/stand.json"
     force: yes
   vars:
     lemonade_tahiti_authtoken: l3m0n4d1
   tags:
-    - lemonade-stand-service
-    - lemonade-stand-service-systemd
+    - lemonade-stand-config
 
 - name: Install MySQL
   include_role:
@@ -55,13 +53,25 @@
         password: "{{ lemonade_stand_db_passwd }}"
         priv: "{{ lemonade_stand_db_user }}.*:ALL"
   tags:
-    - lemonade-stand-mysql-install
+    - lemonade-mysql
+    - lemonade-stand-mysql
 
 - name: Install Redis
   include_role:
     name: geerlingguy.redis
   tags:
-    - lemonade-stand-redis-install
+    - lemonade-redis
+    - lemonade-stand-redis
+
+- name: Chown directory
+  file:
+    path: "{{ lemonade_system_user_home }}/stand"
+    state: directory
+    owner: "{{ lemonade_system_user }}"
+    group: "{{ lemonade_system_group }}"
+    mode: 0755
+  tags:
+    - lemonade-dirs
 
 - name: Run stand service
   systemd:
@@ -74,4 +84,5 @@
   retries: 3
   delay: 3
   tags:
-    - lemonade-stand-service
+    - lemonade-systemd
+    - lemonade-stand-systemd
