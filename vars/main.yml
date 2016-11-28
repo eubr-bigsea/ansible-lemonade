@@ -29,6 +29,9 @@ lemonade_juicer_git_branch: master
 
 lemonade_limonero_git_repo: https://github.com/eubr-bigsea/limonero.git
 lemonade_limonero_git_branch: master
+lemonade_limonero_db_user: limonero
+lemonade_limonero_db_passwd: limonerosecret
+lemonade_limonero_db_host: localhost
 
 lemonade_citron_git_repo: https://github.com/eubr-bigsea/ember-citron.git
 lemonade_citron_git_branch: gm_dotenv_environment
