@@ -11,6 +11,13 @@ lemonade_apt_packages:
   - git
   - libmysqlclient-dev
 
+lemonade_stand_git_repo: https://github.com/eubr-bigsea/stand.git
+lemonade_stand_git_branch: master
+lemonade_stand_db_user: stand
+lemonade_stand_db_passwd: standsecret
+lemonade_stand_db_host: localhost
+lemonade_stand_redis_host: localhost
+
 lemonade_tahiti_git_repo: https://github.com/eubr-bigsea/tahiti.git
 lemonade_tahiti_git_branch: master
 lemonade_tahiti_db_user: tahiti

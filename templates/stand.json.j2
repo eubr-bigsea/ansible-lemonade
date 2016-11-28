@@ -1,0 +1,15 @@
+{
+    "port": 3320,
+    "servers": {
+        "database_url": "mysql+pymysql://{{ lemonade_stand_db_user }}:{{
+          lemonade_stand_db_passwd }}@{{lemonade_stand_db_host}}:3306/stand",
+        "environment": "dev",
+        "redis_server": "{{ lemonade_stand_redis_host }}"
+    },
+    "services": {
+        "tahiti": {
+            "url": "http://{{ ansible_fqdn }}/tahiti",
+            "token": "{{ lemonade_tahiti_authtoken }}"
+        }
+    }
+}
