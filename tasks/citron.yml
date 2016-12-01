@@ -44,7 +44,7 @@
 
 - name: Create ember dotenv production
   copy:
-    content:  "THORN=http://localhost:3000"
+    content:  "THORN={{ lemonade_thorn_host }}"
     dest: "{{ lemonade_system_user_home }}/citron/.env"
     force: yes
   tags:

@@ -4,6 +4,7 @@ Description=Unicorn Server
 [Service]
 WorkingDirectory={{ unicorn_app_path }}
 Environment=RAILS_ENV=production
+Environment=RAILS_CORS_ORIGINS={{ lemonade_citron_host }}
 SyslogIdentifier=thorn-unicorn
 PIDFile=/var/run/lemonade/unicorn.pid
 

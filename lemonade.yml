@@ -2,9 +2,10 @@
 - name: Install lemonade all in one
   hosts: lemonade
   become: yes
-  user: vagrant
   roles:
     - { role:  "lemonade", tags: ['lemonade'] }
   vars:
-    - citron: true
-    - thorn: true
+    citron: true
+    thorn: true
+    lemonade_thorn_host: "http://{{ groups['lemonade'][0] }}:3000"
+    lemonade_citron_host: "http://{{ groups['lemonade'][0] }}"
