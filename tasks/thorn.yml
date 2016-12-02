@@ -50,7 +50,7 @@
   tags:
     - lemonade-dirs
 
-- name: Setup database
+- name: Setup thorn database
   command: "{{ lemonade_system_user_home }}/.rbenv/shims/rake db:setup"
   args:
     chdir: "{{ lemonade_system_user_home }}/thorn"
@@ -66,12 +66,15 @@
 - name: Rake db:setup failed
   fail: msg="Rake db:setup failed"
   when: "not 'already exists' in rake_db_setup.stderr"
+  tags:
+    - lemonade-rails
 
 - name: Run rails migrations and compile assets
   command: "{{ lemonade_system_user_home }}/.rbenv/shims/rake db:migrate"
   args:
     chdir: "{{ lemonade_system_user_home }}/thorn"
   environment:
+    RAILS_CORS_ORIGINS: "{{ lemonade_citron_host }}"
     RAILS_ENV: production
   tags:
     - lemonade-rails
